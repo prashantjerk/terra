@@ -1,65 +1,40 @@
 import React, { useState, useEffect } from "react";
 import "./App.css";
 
+const TOTAL_CAPACITY = 6; // Set your lot's fixed capacity here
+
 function App() {
-  const [spaces, setSpaces] = useState([]);
+  const [occupiedCount, setOccupiedCount] = useState(0);
+  const [lastUpdated, setLastUpdated] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Fetch live status from Spring Boot backend
+  // Fetch live aggregate status from Spring Boot backend
   const fetchParkingStatus = async () => {
     try {
       const response = await fetch(
         "http://localhost:8080/api/v1/parking/status",
       );
-      if (!response.ok) {
-        throw new Error(`Server error: ${response.status}`);
-      }
+      if (!response.ok) throw new Error(`Server error: ${response.status}`);
+
       const data = await response.json();
 
-      // Extract the array from the backend response wrapper
-      if (data && Array.isArray(data.allSpaces)) {
-        setSpaces(data.allSpaces);
-        setError(null);
-      } else if (Array.isArray(data)) {
-        setSpaces(data);
-        setError(null);
+      // Extract aggregate count and optional timestamp
+      const parked = data.numOfCarsParked ?? 0;
+      setOccupiedCount(parked);
+
+      if (data.timeStamp) {
+        setLastUpdated(new Date(data.timeStamp).toLocaleTimeString());
       } else {
-        console.error("Unexpected payload structure:", data);
-        setSpaces([]);
-        setError("Invalid data format received from backend.");
+        setLastUpdated(new Date().toLocaleTimeString());
       }
+
+      setError(null);
     } catch (err) {
-      console.error("Error fetching parking data:", err);
-      setSpaces([]);
+      console.error("Error fetching parking status:", err);
       setError("Unable to connect to Terra Backend (http://localhost:8080).");
     } finally {
       setLoading(false);
-    }
-  };
-
-  // Toggle space occupancy state
-  const toggleOccupancy = async (spaceId, currentStatus) => {
-    try {
-      const response = await fetch(
-        `http://localhost:8080/api/v1/parking/update/${spaceId}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ isOccupied: !currentStatus }),
-        },
-      );
-
-      if (response.ok) {
-        fetchParkingStatus(); // Refresh grid after update
-      } else {
-        alert("Failed to update parking space status.");
-      }
-    } catch (err) {
-      console.error("Error updating space:", err);
-      alert("Error reaching backend server.");
     }
   };
 
@@ -69,13 +44,7 @@ function App() {
     return () => clearInterval(interval);
   }, []);
 
-  // Safe checks using Array.isArray
-  const safeSpaces = Array.isArray(spaces) ? spaces : [];
-  const totalSpaces = safeSpaces.length;
-  const occupiedSpaces = safeSpaces.filter(
-    (s) => s.occupied || s.isOccupied,
-  ).length;
-  const availableSpaces = totalSpaces - occupiedSpaces;
+  const availableCount = Math.max(0, TOTAL_CAPACITY - occupiedCount);
 
   return (
     <div className="container">
@@ -84,50 +53,47 @@ function App() {
         <p>Real-Time Campus Parking Availability</p>
       </header>
 
-      {/* Summary Cards */}
+      {error && <div className="error-banner">{error}</div>}
+
+      {/* Summary Stat Cards */}
       <div className="stats-grid">
         <div className="stat-card">
-          <h3>Total Spaces</h3>
-          <p className="stat-number">{totalSpaces}</p>
+          <h3>Total Capacity</h3>
+          <p className="stat-number">{TOTAL_CAPACITY}</p>
         </div>
         <div className="stat-card available">
           <h3>Available</h3>
-          <p className="stat-number">{availableSpaces}</p>
+          <p className="stat-number">{availableCount}</p>
         </div>
         <div className="stat-card occupied">
           <h3>Occupied</h3>
-          <p className="stat-number">{occupiedSpaces}</p>
+          <p className="stat-number">{occupiedCount}</p>
         </div>
       </div>
 
-      {error && <div className="error-banner">{error}</div>}
-
-      {/* Interactive Parking Lot Grid */}
-      <h2>Parking Lot Grid</h2>
-      {loading ? (
-        <p>Loading parking spaces...</p>
-      ) : (
-        <div className="parking-grid">
-          {safeSpaces.map((space) => {
-            const isOccupied = space.occupied ?? space.isOccupied;
-            return (
+      {/* Lot Status Summary Card */}
+      <div className="status-container">
+        <h2>Current Capacity Overview</h2>
+        {loading ? (
+          <p>Loading parking data...</p>
+        ) : (
+          <div className="occupancy-progress-wrapper">
+            <div className="progress-bar-container">
               <div
-                key={space.spaceId || space.id}
-                className={`parking-space ${isOccupied ? "occupied" : "available"}`}
-                onClick={() =>
-                  toggleOccupancy(space.spaceId || space.id, isOccupied)
-                }
-              >
-                <div className="space-id">{space.spaceId || space.id}</div>
-                <div className="space-status">
-                  {isOccupied ? "OCCUPIED" : "VACANT"}
-                </div>
-                <div className="click-hint">Click to toggle</div>
-              </div>
-            );
-          })}
-        </div>
-      )}
+                className="progress-bar-fill"
+                style={{
+                  width: `${(occupiedCount / TOTAL_CAPACITY) * 100}%`,
+                  backgroundColor:
+                    occupiedCount >= TOTAL_CAPACITY ? "#ef5350" : "#4caf50",
+                }}
+              ></div>
+            </div>
+            <p className="update-timestamp">
+              Last sensor update: {lastUpdated || "N/A"}
+            </p>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
