@@ -3,6 +3,7 @@ package edu.lynchburg.terra.controller;
 import edu.lynchburg.terra.dto.ParkingStatusUpdateRequest;
 import edu.lynchburg.terra.dto.ParkingSummaryResponse;
 import edu.lynchburg.terra.service.ParkingService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,7 +24,7 @@ public class ParkingController {
     }
 
     @PostMapping("/update")
-    public ResponseEntity<String> updateStatus(@RequestBody ParkingStatusUpdateRequest request) {
+    public ResponseEntity<String> updateStatus(@Valid @RequestBody ParkingStatusUpdateRequest request) {
         parkingService.updateParkingStatus(request);
         return ResponseEntity.ok("Status updated successfully.");
     }
