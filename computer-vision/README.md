@@ -1,5 +1,45 @@
 # Terra computer vision (Raspberry Pi 4)
 
+## Use the photos already in Terra (no camera required)
+
+The five uploaded images live in `parkinglot/` at the repository root.
+They contain vehicles and have different framing, so they cannot be used
+as empty references for the original occupancy pipeline. A separate
+pretrained MobileNet-SSD/OpenCV DNN command analyzes them directly:
+
+```bash
+cd ~/terra
+git pull --ff-only origin main
+cd computer-vision
+bash setup.sh
+.venv/bin/python src/download_model.py
+.venv/bin/python src/vehicles.py
+```
+
+The model downloads once (~23 MB); later runs work offline. It runs on
+the CPU using the OpenCV installed by setup, without PyTorch or a GPU.
+Images and JSON counts are saved to `captures/photo-results/`.
+To analyze one photo:
+
+```bash
+.venv/bin/python src/vehicles.py --input ../parkinglot/WIN_20260929_14_58_08_Pro.jpg
+```
+
+This mode identifies car/bus candidates in overlapping crops and removes
+overlapping duplicate boxes. It does not require space polygons. Counts
+are **visible-image detections**, not verified whole-lot occupancy; it
+does not publish them to the backend or invent a lot capacity. Cars cut
+off by image edges or seen from above may be missed, and false positives
+or duplicates remain possible. Review the annotated results. CPU timing
+on this development machine does not establish Raspberry Pi performance.
+
+See `photo-evaluation.json` for the first run on the five photos. These
+results are not a labeled accuracy benchmark. The model source is
+[chuanqi305/MobileNet-SSD](https://github.com/chuanqi305/MobileNet-SSD);
+downloaded architecture and weights are SHA-256 verified. OpenCV 4 is
+required for its Caffe importer. Live empty-reference occupancy commands
+below remain available for future fixed-camera calibration.
+
 This week's prototype captures camera images, processes them with OpenCV,
 and estimates occupancy in individual parking-space polygons. It runs at
 640×480 without a GUI or model downloads, including over SSH. Targets Python

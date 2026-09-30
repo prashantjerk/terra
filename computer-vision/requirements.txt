@@ -1,4 +1,4 @@
 # Raspberry Pi: use bash setup.sh to install OS-matched binary packages.
 # Optional desktop/offline test environment (Python 3.9+):
 numpy>=1.24,<3
-opencv-python-headless>=4.6,<6
+opencv-python-headless>=4.6,<5

@@ -1,0 +1,552 @@
+{
+  "method": "MobileNet-SSD, car/bus classes, confidence 0.5, overlapping 640x600 tiles, NMS IoU 0.25",
+  "scope": "Visible-image candidates only; no empty reference, capacity inference, or backend publishing.",
+  "review": "Visual review found missed vehicles in some photos and loose boxes. These five occupied scenes are not a ground-truth accuracy benchmark.",
+  "images": [
+    {
+      "image": "WIN_20260929_14_58_01_Pro.jpg",
+      "detected_vehicles": 11,
+      "inference_seconds": 0.753,
+      "detections": [
+        {
+          "class": "car",
+          "confidence": 0.9996,
+          "box_xywh": [
+            311,
+            425,
+            218,
+            208
+          ]
+        },
+        {
+          "class": "car",
+          "confidence": 0.9986,
+          "box_xywh": [
+            130,
+            419,
+            242,
+            215
+          ]
+        },
+        {
+          "class": "car",
+          "confidence": 0.9967,
+          "box_xywh": [
+            660,
+            437,
+            182,
+            229
+          ]
+        },
+        {
+          "class": "car",
+          "confidence": 0.9895,
+          "box_xywh": [
+            1420,
+            465,
+            174,
+            205
+          ]
+        },
+        {
+          "class": "car",
+          "confidence": 0.9871,
+          "box_xywh": [
+            1068,
+            421,
+            137,
+            253
+          ]
+        },
+        {
+          "class": "car",
+          "confidence": 0.9829,
+          "box_xywh": [
+            492,
+            432,
+            183,
+            234
+          ]
+        },
+        {
+          "class": "car",
+          "confidence": 0.9592,
+          "box_xywh": [
+            1240,
+            481,
+            157,
+            150
+          ]
+        },
+        {
+          "class": "car",
+          "confidence": 0.9234,
+          "box_xywh": [
+            0,
+            399,
+            201,
+            231
+          ]
+        },
+        {
+          "class": "bus",
+          "confidence": 0.8534,
+          "box_xywh": [
+            1538,
+            482,
+            239,
+            177
+          ]
+        },
+        {
+          "class": "car",
+          "confidence": 0.8273,
+          "box_xywh": [
+            880,
+            455,
+            119,
+            178
+          ]
+        },
+        {
+          "class": "car",
+          "confidence": 0.5167,
+          "box_xywh": [
+            1738,
+            484,
+            180,
+            206
+          ]
+        }
+      ]
+    },
+    {
+      "image": "WIN_20260929_14_58_05_Pro.jpg",
+      "detected_vehicles": 10,
+      "inference_seconds": 0.695,
+      "detections": [
+        {
+          "class": "car",
+          "confidence": 0.9988,
+          "box_xywh": [
+            311,
+            48,
+            211,
+            228
+          ]
+        },
+        {
+          "class": "car",
+          "confidence": 0.9957,
+          "box_xywh": [
+            817,
+            49,
+            175,
+            247
+          ]
+        },
+        {
+          "class": "car",
+          "confidence": 0.9886,
+          "box_xywh": [
+            1419,
+            44,
+            171,
+            212
+          ]
+        },
+        {
+          "class": "car",
+          "confidence": 0.9877,
+          "box_xywh": [
+            1623,
+            64,
+            193,
+            234
+          ]
+        },
+        {
+          "class": "car",
+          "confidence": 0.9856,
+          "box_xywh": [
+            1234,
+            20,
+            145,
+            279
+          ]
+        },
+        {
+          "class": "car",
+          "confidence": 0.9673,
+          "box_xywh": [
+            132,
+            55,
+            234,
+            216
+          ]
+        },
+        {
+          "class": "car",
+          "confidence": 0.9666,
+          "box_xywh": [
+            489,
+            49,
+            191,
+            219
+          ]
+        },
+        {
+          "class": "car",
+          "confidence": 0.8713,
+          "box_xywh": [
+            8,
+            48,
+            196,
+            209
+          ]
+        },
+        {
+          "class": "car",
+          "confidence": 0.8693,
+          "box_xywh": [
+            653,
+            52,
+            171,
+            242
+          ]
+        },
+        {
+          "class": "car",
+          "confidence": 0.5599,
+          "box_xywh": [
+            1771,
+            61,
+            149,
+            216
+          ]
+        }
+      ]
+    },
+    {
+      "image": "WIN_20260929_14_58_08_Pro.jpg",
+      "detected_vehicles": 10,
+      "inference_seconds": 0.583,
+      "detections": [
+        {
+          "class": "car",
+          "confidence": 0.9991,
+          "box_xywh": [
+            243,
+            147,
+            227,
+            216
+          ]
+        },
+        {
+          "class": "car",
+          "confidence": 0.9983,
+          "box_xywh": [
+            423,
+            146,
+            208,
+            218
+          ]
+        },
+        {
+          "class": "car",
+          "confidence": 0.9983,
+          "box_xywh": [
+            1692,
+            169,
+            223,
+            206
+          ]
+        },
+        {
+          "class": "car",
+          "confidence": 0.9978,
+          "box_xywh": [
+            751,
+            154,
+            188,
+            231
+          ]
+        },
+        {
+          "class": "car",
+          "confidence": 0.9965,
+          "box_xywh": [
+            1350,
+            148,
+            162,
+            204
+          ]
+        },
+        {
+          "class": "car",
+          "confidence": 0.9948,
+          "box_xywh": [
+            61,
+            146,
+            248,
+            218
+          ]
+        },
+        {
+          "class": "car",
+          "confidence": 0.9809,
+          "box_xywh": [
+            1546,
+            171,
+            180,
+            228
+          ]
+        },
+        {
+          "class": "car",
+          "confidence": 0.978,
+          "box_xywh": [
+            593,
+            153,
+            176,
+            231
+          ]
+        },
+        {
+          "class": "car",
+          "confidence": 0.973,
+          "box_xywh": [
+            1170,
+            133,
+            139,
+            263
+          ]
+        },
+        {
+          "class": "car",
+          "confidence": 0.9693,
+          "box_xywh": [
+            973,
+            240,
+            120,
+            128
+          ]
+        }
+      ]
+    },
+    {
+      "image": "WIN_20260929_14_58_10_Pro.jpg",
+      "detected_vehicles": 9,
+      "inference_seconds": 0.543,
+      "detections": [
+        {
+          "class": "car",
+          "confidence": 0.9954,
+          "box_xywh": [
+            437,
+            26,
+            196,
+            228
+          ]
+        },
+        {
+          "class": "car",
+          "confidence": 0.9951,
+          "box_xywh": [
+            265,
+            30,
+            209,
+            229
+          ]
+        },
+        {
+          "class": "car",
+          "confidence": 0.9911,
+          "box_xywh": [
+            777,
+            26,
+            176,
+            244
+          ]
+        },
+        {
+          "class": "car",
+          "confidence": 0.9753,
+          "box_xywh": [
+            84,
+            37,
+            226,
+            228
+          ]
+        },
+        {
+          "class": "car",
+          "confidence": 0.968,
+          "box_xywh": [
+            1387,
+            3,
+            163,
+            210
+          ]
+        },
+        {
+          "class": "car",
+          "confidence": 0.9277,
+          "box_xywh": [
+            1186,
+            0,
+            145,
+            269
+          ]
+        },
+        {
+          "class": "car",
+          "confidence": 0.9181,
+          "box_xywh": [
+            1579,
+            23,
+            188,
+            235
+          ]
+        },
+        {
+          "class": "car",
+          "confidence": 0.6503,
+          "box_xywh": [
+            641,
+            29,
+            150,
+            247
+          ]
+        },
+        {
+          "class": "bus",
+          "confidence": 0.584,
+          "box_xywh": [
+            1728,
+            17,
+            187,
+            214
+          ]
+        }
+      ]
+    },
+    {
+      "image": "WIN_20260929_14_58_18_Pro.jpg",
+      "detected_vehicles": 11,
+      "inference_seconds": 0.53,
+      "detections": [
+        {
+          "class": "car",
+          "confidence": 0.9995,
+          "box_xywh": [
+            253,
+            461,
+            214,
+            218
+          ]
+        },
+        {
+          "class": "car",
+          "confidence": 0.9962,
+          "box_xywh": [
+            73,
+            470,
+            239,
+            219
+          ]
+        },
+        {
+          "class": "car",
+          "confidence": 0.9956,
+          "box_xywh": [
+            609,
+            458,
+            164,
+            233
+          ]
+        },
+        {
+          "class": "car",
+          "confidence": 0.9923,
+          "box_xywh": [
+            435,
+            465,
+            196,
+            234
+          ]
+        },
+        {
+          "class": "car",
+          "confidence": 0.9753,
+          "box_xywh": [
+            1175,
+            442,
+            159,
+            182
+          ]
+        },
+        {
+          "class": "car",
+          "confidence": 0.9707,
+          "box_xywh": [
+            1007,
+            427,
+            134,
+            244
+          ]
+        },
+        {
+          "class": "car",
+          "confidence": 0.966,
+          "box_xywh": [
+            1349,
+            452,
+            192,
+            205
+          ]
+        },
+        {
+          "class": "bus",
+          "confidence": 0.8422,
+          "box_xywh": [
+            1462,
+            480,
+            249,
+            153
+          ]
+        },
+        {
+          "class": "car",
+          "confidence": 0.6883,
+          "box_xywh": [
+            1667,
+            455,
+            250,
+            200
+          ]
+        },
+        {
+          "class": "car",
+          "confidence": 0.678,
+          "box_xywh": [
+            821,
+            487,
+            118,
+            166
+          ]
+        },
+        {
+          "class": "car",
+          "confidence": 0.5334,
+          "box_xywh": [
+            0,
+            486,
+            138,
+            200
+          ]
+        }
+      ]
+    }
+  ]
+}
