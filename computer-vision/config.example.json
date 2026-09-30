@@ -1,0 +1,8 @@
+{
+  "capacity": 1,
+  "pixel_threshold": 30,
+  "occupied_fraction": 0.15,
+  "regions": [
+    {"id": "demo-space", "points": [[0.1, 0.1], [0.9, 0.1], [0.9, 0.9], [0.1, 0.9]]}
+  ]
+}
