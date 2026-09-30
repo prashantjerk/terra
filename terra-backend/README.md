@@ -1,7 +1,7 @@
 # Terra backend: timestamp and parked-car count
 
 The API exposes only `timeStamp` and `numOfCarsParked`. Capacity is a
-hardcoded frontend value (`TOTAL_CAPACITY`, currently 6 in `frontend/src/App.js`).
+hardcoded frontend value (`TOTAL_CAPACITY`, currently 11 in `frontend/src/App.js`).
 The frontend computes availability as capacity minus the parked count,
 clamped to zero to avoid negative availability for an erroneous high count.
 
@@ -55,3 +55,18 @@ including schema creation and JPA validation, without touching your real
 database. Development-machine checks use Java 17 with `-Djava.version=17`.
 The Pi's aggregate publisher still works with `/update`; saved-photo tests
 remain local and do not publish inaccurate candidate counts automatically.
+
+## Saved-photo demo
+
+Open the frontend at `http://localhost:3000/?demo=14_58_01`. It shows the
+file served from `../parkinglot/WIN_20260929_14_58_01_Pro.jpg` relative to
+`terra-backend/`. `GET /api/v1/parking/demo-image` returns that JPEG with
+no-store caching, or 404 if it is missing. This separate image endpoint
+does not add fields to the status JSON or store images in the database.
+Configure `terra.demo-image` with an absolute path when starting the backend
+from a different working directory. Only that configured file can be served;
+the request does not accept file paths.
+
+See `computer-vision/README.md` for the Pi single-photo publishing command.
+Both devices must pull the same edited photo before processing/presenting.
+The frontend's demo label distinguishes a saved photo from a live feed.

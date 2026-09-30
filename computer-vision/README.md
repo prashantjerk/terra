@@ -28,7 +28,7 @@ To analyze one photo:
 This mode identifies car/bus candidates in overlapping crops and removes
 overlapping duplicate boxes. It does not require space polygons. Counts
 are **visible-image detections**, not verified whole-lot occupancy; it
-does not publish them to the backend or invent a lot capacity. Cars cut
+does not invent a lot capacity. Publishing one demo photo requires explicitly setting `--backend-url`. Cars cut
 off by image edges or seen from above may be missed, and false positives
 or duplicates remain possible. Review the annotated results. CPU timing
 on this development machine does not establish Raspberry Pi performance.
@@ -45,6 +45,68 @@ and estimates occupancy in individual parking-space polygons. It runs at
 640×480 without a GUI or model downloads, including over SSH. Targets Python
 3.9+ on Raspberry Pi OS Bookworm or newer, with a CSI camera supported by
 Picamera2 or a USB webcam supported by OpenCV.
+
+## Tomorrow's single-photo demo
+
+The demo lot capacity is hardcoded to **11** in the frontend. The chosen
+file is `parkinglot/WIN_20260929_14_58_01_Pro.jpg`. If you replace it with an
+AI-edited version under the same name, commit that file, then pull on both
+the backend laptop and Pi. Both clones must use the same photo. Detection
+is recomputed from the photo; the count is not hardcoded, and edited photos
+still need visual checking before the demo.
+
+On the backend laptop, first start PostgreSQL with the project's database
+configuration, then in two terminals:
+
+```bash
+cd terra/terra-backend
+# Windows: mvnw.cmd spring-boot:run
+./mvnw spring-boot:run
+```
+
+```bash
+cd terra/frontend
+npm ci
+npm start
+```
+
+Open `http://localhost:3000/?demo=14_58_01`. It displays the saved photo,
+latest count, capacity, availability, and backend update time. The image is
+served by `GET /api/v1/parking/demo-image`, separate from the two-field
+status JSON. Start the backend from `terra-backend/` so its default relative
+photo path resolves correctly. For a different working directory, set the
+Spring property `terra.demo-image` to the photo's full absolute path.
+
+On the Pi (setup/model download only needed once):
+
+```bash
+cd ~/terra
+git pull --ff-only origin main
+cd computer-vision
+bash setup.sh
+.venv/bin/python src/download_model.py
+.venv/bin/python src/vehicles.py \
+  --input ../parkinglot/WIN_20260929_14_58_01_Pro.jpg \
+  --backend-url http://YOUR_LAPTOP_IP:8080/api/v1/parking/update
+```
+
+Replace YOUR_LAPTOP_IP with the backend laptop's LAN IPv4 address
+(`ipconfig` on Windows). Do not use localhost on the Pi. The devices must
+be able to reach one another; allow incoming TCP port 8080 on the laptop's
+private-network firewall if needed. Check connectivity from the Pi:
+
+```bash
+curl http://YOUR_LAPTOP_IP:8080/api/v1/parking/status
+```
+
+The publishing command runs once, saves numbered annotated boxes and
+`demo-payload.json` locally, posts only `timeStamp` and `numOfCarsParked`,
+and exits. A failed POST exits with an error; rerun after fixing connectivity.
+The backend persists the count in PostgreSQL and the frontend polls every
+three seconds. Its timestamp indicates when the demo count was received,
+not when the saved image was photographed. Repeat the command after each
+photo replacement. The frontend shows the backend laptop's current file;
+there is no image upload or source-image identity in the two-field JSON.
 
 ## First run on the Pi
 
@@ -132,7 +194,7 @@ The payload matches the existing backend DTO:
 
 Network failures are reported and retried with the next fresh result.
 Capacity minus occupied regions is calculated locally as `available` in
-`status.json`. The frontend currently hardcodes `TOTAL_CAPACITY = 6` in
+`status.json`. The frontend currently hardcodes `TOTAL_CAPACITY = 11` in
 `frontend/src/App.js`; keep your mapped capacity aligned with that value,
 or update it to your actual lot capacity.
 
