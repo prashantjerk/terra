@@ -26,7 +26,7 @@ function App() {
       if (data.timeStamp) {
         setLastUpdated(new Date(data.timeStamp).toLocaleTimeString());
       } else {
-        setLastUpdated(new Date().toLocaleTimeString());
+        setLastUpdated(null);
       }
 
       setError(null);

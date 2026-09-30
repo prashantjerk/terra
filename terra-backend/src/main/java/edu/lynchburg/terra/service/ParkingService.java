@@ -16,9 +16,9 @@ public class ParkingService {
     }
 
     public ParkingSummaryResponse getLatestStatus() {
-        ParkingLog latest = repository.findTopByOrderByRecordedAtDesc()
-                .orElse(new ParkingLog(0));
-        return new ParkingSummaryResponse(latest.getRecordedAt(), latest.getNumCarsParked());
+        return repository.findTopByOrderByRecordedAtDescIdDesc()
+                .map(latest -> new ParkingSummaryResponse(latest.getRecordedAt(), latest.getNumCarsParked()))
+                .orElse(new ParkingSummaryResponse(null, null));
     }
 
     public void updateParkingStatus(ParkingStatusUpdateRequest request) {

@@ -8,5 +8,5 @@ import java.util.Optional;
 
 @Repository
 public interface ParkingLogRepository extends JpaRepository<ParkingLog, Long> {
-    Optional<ParkingLog> findTopByOrderByRecordedAtDesc();
+    Optional<ParkingLog> findTopByOrderByRecordedAtDescIdDesc();
 }
