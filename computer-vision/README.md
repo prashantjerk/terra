@@ -1,5 +1,9 @@
 # Terra computer vision (Raspberry Pi 4)
 
+For the current two-field API, capacity-11 demo, and device startup order,
+see the [project walkthrough](../README.md). Saved-photo detection is the
+current demo path; empty-reference/live-camera setup below is optional.
+
 ## Use the photos already in Terra (no camera required)
 
 The five uploaded images live in `parkinglot/` at the repository root.
@@ -33,7 +37,8 @@ off by image edges or seen from above may be missed, and false positives
 or duplicates remain possible. Review the annotated results. CPU timing
 on this development machine does not establish Raspberry Pi performance.
 
-See `photo-evaluation.json` for the first run on the five photos. These
+See `photo-evaluation.json` for a historical run on the original five photos.
+It does not describe newly edited/replaced photos. These
 results are not a labeled accuracy benchmark. The model source is
 [chuanqi305/MobileNet-SSD](https://github.com/chuanqi305/MobileNet-SSD);
 downloaded architecture and weights are SHA-256 verified. OpenCV 4 is
@@ -41,12 +46,12 @@ required for its Caffe importer. Live empty-reference occupancy commands
 below remain available for future fixed-camera calibration.
 
 This week's prototype captures camera images, processes them with OpenCV,
-and estimates occupancy in individual parking-space polygons. It runs at
+and estimates occupancy in individual parking-space polygons. The optional empty-reference pipeline runs at
 640×480 without a GUI or model downloads, including over SSH. Targets Python
 3.9+ on Raspberry Pi OS Bookworm or newer, with a CSI camera supported by
 Picamera2 or a USB webcam supported by OpenCV.
 
-## Tomorrow's single-photo demo
+## Single-photo demo
 
 The demo lot capacity is hardcoded to **11** in the frontend. The chosen
 file is `parkinglot/WIN_20260929_14_58_01_Pro.jpg`. If you replace it with an
@@ -214,7 +219,8 @@ python src/main.py run --image path/to/test.jpg \
   --reference path/to/empty.jpg --config config.example.json
 ```
 
-Offline runs cannot publish to the backend. Tests use synthetic images and
+`main.py run --image` cannot publish to the backend.
+`vehicles.py --input PHOTO --backend-url URL` can publish a saved-photo demo. Tests use synthetic images and
 a local HTTP server; camera hardware must still be verified on the Pi.
 
 References: [Raspberry Pi camera documentation](https://www.raspberrypi.com/documentation/computers/camera_software.html),

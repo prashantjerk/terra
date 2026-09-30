@@ -1,70 +1,73 @@
-# Getting Started with Create React App
+# Terra frontend
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+React displays the latest backend count and calculates availability from
+`TOTAL_CAPACITY = 11` in `src/App.js`. Capacity is not sent by the Pi or backend.
 
-## Available Scripts
+## Run on the backend laptop
 
-In the project directory, you can run:
+From this folder, after pulling the latest repository version:
 
-### `npm start`
+```bash
+npm ci
+npm start
+```
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+The backend must be running on port 8080 with PostgreSQL configured.
+Open http://localhost:3000 for the counts, or
+**http://localhost:3000/?demo=14_58_01** for the counts plus the saved demo photo.
+See the [project demo walkthrough](../README.md) for the Pi publishing command.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## API and display behavior
 
-### `npm test`
+| Request | Used for |
+| --- | --- |
+| GET `/api/v1/parking/status` | Count and timestamp, polled every 3 seconds |
+| GET `/api/v1/parking/demo-image` | Saved JPEG, displayed only in demo mode |
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+The status response contains exactly `timeStamp` and `numOfCarsParked`:
 
-### `npm run build`
+```json
+{"timeStamp":"2026-09-29T21:00:00","numOfCarsParked":8}
+```
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+This example displays 11 total, 8 occupied, and 3 available. Availability
+is clamped to zero and a warning appears if the count exceeds capacity.
+Before any observation exists, null values display as unknown counts and
+N/A for the update time. Polling never replaces a missing timestamp with
+the current browser time. On a fetch error, an error message appears and
+previously received values remain visible.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+The timestamp is the backend's receipt time and currently has no timezone
+offset. The browser interprets it as local time; keep deployment timezone
+settings aligned. There is no automatic stale-data timeout.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+The demo displays `WIN_20260929_14_58_01_Pro.jpg` from the **backend laptop**.
+It is a saved source image, not a live feed or annotated detection result.
+Pull a replacement photo on both the laptop and Pi, rerun detection, and
+allow the next frontend poll to refresh its image URL. The backend serves
+the photo with no-store caching. No image bytes travel in the status JSON.
 
-### `npm run eject`
+## API address
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+The default is `http://localhost:8080`. To use another backend address, set
+`REACT_APP_API_BASE_URL` before starting/building the app (or put it in a
+local `.env.local` file):
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+```dotenv
+REACT_APP_API_BASE_URL=http://192.168.1.50:8080
+```
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+Restart the development server after changing it. A browser on another
+computer needs the laptop's reachable address, since its localhost refers
+to that other computer. Backend CORS currently permits the origin
+`http://localhost:3000`; other frontend origins need a matching backend change.
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+## Checks
 
-## Learn More
+```bash
+npm test -- --watchAll=false
+npm run build
+```
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+Frontend tests cover count/availability, unknown initial status, and the
+saved-photo URL. The production build is written to `build/`.

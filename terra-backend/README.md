@@ -1,72 +1,98 @@
-# Terra backend: timestamp and parked-car count
+# Terra backend
 
-The API exposes only `timeStamp` and `numOfCarsParked`. Capacity is a
-hardcoded frontend value (`TOTAL_CAPACITY`, currently 11 in `frontend/src/App.js`).
-The frontend computes availability as capacity minus the parked count,
-clamped to zero to avoid negative availability for an erroneous high count.
+Java/Spring Boot stores aggregate parked-car observations in PostgreSQL.
+Its status contract has only `timeStamp` and `numOfCarsParked`; the frontend
+hardcodes capacity 11 and calculates availability. There are no individual
+parking-space APIs or capacity fields.
 
-## Endpoints
+## REST endpoints
 
-| Method | Endpoint | Purpose |
+| Method | Endpoint | Result |
 | --- | --- | --- |
-| POST | `/api/v1/parking/update` | Store a parked-car count observation |
-| GET | `/api/v1/parking/status` | Read the latest observation |
+| POST | `/api/v1/parking/update` | Validate and store one count; returns a success message |
+| GET | `/api/v1/parking/status` | Latest timestamp/count JSON |
+| GET | `/api/v1/parking/demo-image` | Configured saved JPEG, separate from status JSON |
 
-Example update:
-
-```bash
-curl -X POST http://localhost:8080/api/v1/parking/update \
-  -H 'Content-Type: application/json' -d '{"numOfCarsParked":3}'
-```
-
-The response to GET has exactly two fields:
+Example Pi/demo request:
 
 ```json
-{"timeStamp":"2026-09-29T20:00:00","numOfCarsParked":3}
+{"timeStamp":"2026-09-30T01:00:00+00:00","numOfCarsParked":8}
 ```
 
-The timestamp is the backend's receipt time for the latest count, not the
-frontend polling time. Reading status never refreshes it. The current
-LocalDateTime format uses the backend's local timezone; deploy the backend
-and frontend with that timezone in mind. The existing Pi request's optional
-`timeStamp` is accepted for compatibility; storage uses server receipt time.
-There is no automatic stale-data timeout yet; the UI displays the last
-update time. If no observation exists, both fields are null and the UI
-shows N/A for the timestamp. Startup does not seed fake zero-count observations.
-Missing/null or negative counts return 400 and do not write to the database.
+The count is required and must be a nonnegative integer. Missing/null or
+negative counts return 400. `timeStamp` in the request is optional: the
+backend records its own receipt time instead. Successful updates insert
+rows into `parking_logs`; the response to POST is text, not the status JSON.
 
-The only application entity is `ParkingLog`: an internal row ID plus count
-and observation time. Its row ID is not part of the public JSON contract.
-No individual parking-space model, endpoints, or capacity fields are used.
-Existing parking_spaces tables from earlier runs are left untouched and
-unused; no table/data deletion is performed.
+Example GET response:
 
-## Run and verify
+```json
+{"timeStamp":"2026-09-29T21:00:00","numOfCarsParked":8}
+```
 
-Create PostgreSQL database `terra_db` on the backend laptop. Configure the
-connection in `src/main/resources/application.properties`, or override it
+GET does not modify the stored timestamp or create observations. With no
+observations it returns `{"timeStamp":null,"numOfCarsParked":null}`. Startup
+does not insert fake zero-count logs. The timestamp uses backend local time
+without an offset; the frontend browser interprets it in its local timezone.
+This records receipt time, not the saved image's capture time, and there is
+no automatic stale-data timeout.
+
+`ParkingLog` has an internal row ID, count, and observation time. The row
+ID is not exposed in JSON. Older parking_spaces tables, if present, are
+unused and are not deleted by startup.
+
+## Database and startup
+
+The repository targets Java 25 and includes a Maven wrapper. Create the
+PostgreSQL database `terra_db` on the backend laptop. Configure
+`src/main/resources/application.properties`, or override the connection
 with `SPRING_DATASOURCE_URL`, `SPRING_DATASOURCE_USERNAME`, and
-`SPRING_DATASOURCE_PASSWORD`. Pull the latest code and restart from
-`terra-backend/` with `./mvnw spring-boot:run` (Windows: `mvnw.cmd spring-boot:run`).
-The repository targets Java 25.
+`SPRING_DATASOURCE_PASSWORD`. Startup creates the logs table from
+`src/main/resources/db/schema.sql` and validates the JPA mapping.
 
-Run `./mvnw test`. Tests use an isolated H2 database in PostgreSQL mode,
-including schema creation and JPA validation, without touching your real
-database. Development-machine checks use Java 17 with `-Djava.version=17`.
-The Pi's aggregate publisher still works with `/update`; saved-photo tests
-remain local and do not publish inaccurate candidate counts automatically.
+From **terra-backend/**:
 
-## Saved-photo demo
+```bash
+# Windows Command Prompt
+mvnw.cmd spring-boot:run
+```
 
-Open the frontend at `http://localhost:3000/?demo=14_58_01`. It shows the
-file served from `../parkinglot/WIN_20260929_14_58_01_Pro.jpg` relative to
-`terra-backend/`. `GET /api/v1/parking/demo-image` returns that JPEG with
-no-store caching, or 404 if it is missing. This separate image endpoint
-does not add fields to the status JSON or store images in the database.
-Configure `terra.demo-image` with an absolute path when starting the backend
-from a different working directory. Only that configured file can be served;
-the request does not accept file paths.
+On macOS/Linux: `bash mvnw spring-boot:run`. HTTP defaults to port 8080.
+For Pi access, use the laptop's LAN IP and permit that port on the private
+network firewall when necessary. Backend CORS permits http://localhost:3000.
 
-See `computer-vision/README.md` for the Pi single-photo publishing command.
-Both devices must pull the same edited photo before processing/presenting.
-The frontend's demo label distinguishes a saved photo from a live feed.
+## Demo photo
+
+The default path is `../parkinglot/WIN_20260929_14_58_01_Pro.jpg`, resolved
+relative to the backend process's working directory. The image endpoint
+serves only this configured file, with no-store caching, and returns 404
+if it is missing. It does not accept arbitrary paths, upload images, or
+store image bytes in the database.
+
+Start from terra-backend/ or set `terra.demo-image` to an absolute path,
+for example in a local configuration override:
+
+```properties
+terra.demo-image=C:/projects/terra/parkinglot/WIN_20260929_14_58_01_Pro.jpg
+```
+
+Pull the same photo version on the laptop and Pi before presenting. The
+frontend at http://localhost:3000/?demo=14_58_01 shows the laptop's photo
+alongside the latest database count. There is no image association in the
+two-field JSON; use the selected demo file on both devices. Full walkthrough:
+[project README](../README.md).
+
+## Verification
+
+```bash
+# Windows
+mvnw.cmd test
+# macOS/Linux
+bash mvnw test
+```
+
+Tests use isolated H2 storage in PostgreSQL mode, including schema creation
+and JPA validation. They do not connect to the real database. Development
+checks used Java 17 with `-Djava.version=17`; the default target remains 25.
+Tests cover the count contract, validation, null initial state, timestamp
+stability on polling, and demo-image success/missing-file behavior.
