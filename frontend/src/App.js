@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import "./App.css";
 
 const TOTAL_CAPACITY = 11; // Hardcoded capacity for the selected-photo demo
@@ -13,12 +13,27 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const busy = useRef(false);
+  const [cooldown, setCooldown] = useState(0);
+  const [freshness, setFreshness] = useState('Stored result; click Refresh to check the Pi.');
   // Fetch live aggregate status from Spring Boot backend
-  const fetchParkingStatus = async () => {
+  const fetchParkingStatus = async (refresh = false) => {
+    if (busy.current) return;
+    busy.current = true;
+    setLoading(true);
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 70000);
     try {
       const response = await fetch(
-        `${API_BASE}/api/v1/parking/status`,
+        `${API_BASE}/api/v1/parking/${refresh ? "refresh" : "status"}`,
+        { method: refresh ? 'POST' : 'GET', signal: controller.signal },
       );
+      if (response.status === 429 || response.status === 503) {
+        const wait = Number(response.headers?.get('Retry-After')) || 10;
+        setCooldown(Math.max(1, wait));
+        throw new Error(response.status === 429 ? `Request limit reached. Try again in ${wait} seconds.`
+          : 'Pi unavailable. Showing the previous result.');
+      }
       if (!response.ok) throw new Error(`Server error: ${response.status}`);
 
       const data = await response.json();
@@ -37,22 +52,30 @@ function App() {
         setLastUpdated(null);
       }
 
+      setFreshness(refresh ? 'Latest successful check (a recent result may be reused).' : 'Stored result; click Refresh to check the Pi.');
       setError(null);
     } catch (err) {
       console.error("Error fetching parking status:", err);
-      setError(`Unable to load parking data from ${API_BASE}.`);
+      setError(err.name === 'AbortError' ? 'Request timed out. Showing the previous result.' : err.message);
+      setFreshness('Previous result; a fresh check has not been confirmed.');
     } finally {
+      clearTimeout(timeout);
+      busy.current = false;
       setLoading(false);
     }
   };
 
   useEffect(() => {
     fetchParkingStatus();
-    const interval = setInterval(fetchParkingStatus, 3000);
-    return () => clearInterval(interval);
+
   }, []);
 
   useEffect(() => { setImageError(false); }, [observationStamp]);
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const timer = setTimeout(() => setCooldown(value => Math.max(0, value - 1)), 1000);
+    return () => clearTimeout(timer);
+  }, [cooldown]);
 
   const availableCount = occupiedCount === null ? null : Math.max(0, TOTAL_CAPACITY - occupiedCount);
 
@@ -60,9 +83,13 @@ function App() {
     <div className="container">
       <header className="header">
         <h1>Terra Parking Management</h1>
-        <p>Real-Time Campus Parking Availability</p>
+        <p>Campus Parking Availability on Demand</p>
       </header>
 
+      <button onClick={() => fetchParkingStatus(true)} disabled={loading || cooldown > 0}>
+        {loading ? 'Checking…' : cooldown > 0 ? `Refresh in ${cooldown}s` : 'Refresh parking status'}
+      </button>
+      <p role="status">{freshness}</p>
       {error && <div className="error-banner">{error}</div>}
       {occupiedCount > TOTAL_CAPACITY && (
         <div className="error-banner">Detected count exceeds the configured capacity. Review the detection boxes.</div>
@@ -102,7 +129,7 @@ function App() {
               ></div>
             </div>
             <p className="update-timestamp">
-              Last sensor update: {lastUpdated || "N/A"}
+              Last confirmed check: {lastUpdated || "N/A"}
             </p>
           </div>
         )}

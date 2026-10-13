@@ -1,5 +1,7 @@
 # Terra computer vision (Raspberry Pi 4)
 
+**Current workflow:** [On-demand setup and testing](../ON_DEMAND.md). Refresh is user-triggered; the older manual-publishing examples below remain available.
+
 For the current two-field API, capacity-11 demo, and device startup order,
 see the [project walkthrough](../README.md). Saved-photo detection is the
 current demo path; empty-reference/live-camera setup below is optional.

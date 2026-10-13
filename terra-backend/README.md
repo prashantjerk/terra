@@ -1,5 +1,7 @@
 # Terra backend
 
+**Current workflow:** [On-demand setup and testing](../ON_DEMAND.md). Refresh is user-triggered; the older manual-publishing examples below remain available.
+
 Java/Spring Boot stores aggregate parked-car observations in PostgreSQL.
 Its status contract has only `timeStamp` and `numOfCarsParked`; the frontend
 hardcodes capacity 11 and calculates availability. There are no individual
@@ -10,6 +12,7 @@ parking-space APIs or capacity fields.
 | Method | Endpoint | Result |
 | --- | --- | --- |
 | POST | `/api/v1/parking/update` | Validate and store one count; returns a success message |
+| POST | `/api/v1/parking/refresh` | Cached or newly requested Pi result; 429/503 on limits/failure |
 | GET | `/api/v1/parking/status` | Latest timestamp/count JSON |
 | GET | `/api/v1/parking/demo-image` | Configured saved JPEG, separate from status JSON |
 
@@ -21,8 +24,8 @@ Example Pi/demo request:
 
 The count is required and must be a nonnegative integer. Missing/null or
 negative counts return 400. `timeStamp` in the request is optional: the
-backend records its own receipt time instead. Successful updates insert
-rows into `parking_logs`; the response to POST is text, not the status JSON.
+backend records its own receipt time instead. Count changes insert
+rows into `parking_logs`; unchanged checks update `parking_latest_check`; the response to POST is text, not the status JSON.
 
 Example GET response:
 
@@ -32,7 +35,7 @@ Example GET response:
 
 GET does not modify the stored timestamp or create observations. With no
 observations it returns `{"timeStamp":null,"numOfCarsParked":null}`. Startup
-does not insert fake zero-count logs. The timestamp uses backend local time
+does not insert fake zero-count logs. Successful checks, including unchanged counts, update the latest-check timestamp. The timestamp uses backend local time
 without an offset; the frontend browser interprets it in its local timezone.
 This records receipt time, not the saved image's capture time, and there is
 no automatic stale-data timeout.

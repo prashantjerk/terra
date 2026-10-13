@@ -1,5 +1,7 @@
 # Terra frontend
 
+**Current workflow:** [On-demand setup and testing](../ON_DEMAND.md). Refresh is user-triggered; the older manual-publishing examples below remain available.
+
 React displays the latest backend count and calculates availability from
 `TOTAL_CAPACITY = 11` in `src/App.js`. Capacity is not sent by the Pi or backend.
 
@@ -21,7 +23,7 @@ See the [project demo walkthrough](../README.md) for the Pi publishing command.
 
 | Request | Used for |
 | --- | --- |
-| GET `/api/v1/parking/status` | Count and timestamp, polled every 3 seconds |
+| GET `/api/v1/parking/status` | Stored count and timestamp, read on page load |
 | GET `/api/v1/parking/demo-image` | Saved JPEG, displayed only in demo mode |
 
 The status response contains exactly `timeStamp` and `numOfCarsParked`:
@@ -44,7 +46,7 @@ settings aligned. There is no automatic stale-data timeout.
 The demo displays `WIN_20260929_14_58_01_Pro.jpg` from the **backend laptop**.
 It is a saved source image, not a live feed or annotated detection result.
 Pull a replacement photo on both the laptop and Pi, rerun detection, and
-allow the next frontend poll to refresh its image URL. The backend serves
+click Refresh to update its image URL. The backend serves
 the photo with no-store caching. No image bytes travel in the status JSON.
 
 ## API address

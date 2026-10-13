@@ -1,6 +1,7 @@
 package edu.lynchburg.terra;
 
 import edu.lynchburg.terra.repository.ParkingLogRepository;
+import edu.lynchburg.terra.repository.ParkingCheckRepository;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -12,12 +13,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.junit.jupiter.api.Assertions.*;
 import static org.hamcrest.Matchers.nullValue;
 
-@SpringBootTest
+@SpringBootTest(properties="terra.requests-per-minute=1000")
 @AutoConfigureMockMvc
 class ParkingApiTests {
     @Autowired MockMvc mvc;
     @Autowired ParkingLogRepository logs;
-    @BeforeEach void reset() { logs.deleteAll(); }
+    @Autowired ParkingCheckRepository checks;
+    @BeforeEach void reset() { checks.deleteAll(); logs.deleteAll(); }
 
     @Test void countUpdatesPersistAndReadsReturnOnlyTimestampAndCount() throws Exception {
         mvc.perform(post("/api/v1/parking/update").contentType(MediaType.APPLICATION_JSON)
@@ -30,7 +32,7 @@ class ParkingApiTests {
             .andExpect(jsonPath("$.length()").value(2));
     }
     @Test void rejectsNegativeAndMissingCounts() throws Exception {
-        for (String body : new String[] {"{\"numOfCarsParked\":-1}", "{}"}) {
+        for (String body : new String[] {"{\"numOfCarsParked\":-1}", "{}", "{\"numOfCarsParked\":2.5}"}) {
             mvc.perform(post("/api/v1/parking/update").contentType(MediaType.APPLICATION_JSON)
                 .content(body)).andExpect(status().isBadRequest());
         }
@@ -54,4 +56,19 @@ class ParkingApiTests {
     @Test void spaceEndpointIsRemoved() throws Exception {
         mvc.perform(get("/api/v1/parking/spaces")).andExpect(status().isNotFound());
     }
+    @Test void repeatedCountUpdatesCheckWithoutAddingHistory() throws Exception {
+        for(int count : new int[] {0,0,3,3,11,11}) {
+            mvc.perform(post("/api/v1/parking/update").contentType(MediaType.APPLICATION_JSON)
+                .content("{\"numOfCarsParked\":"+count+"}"))
+                .andExpect(status().isOk());
+        }
+        assertEquals(3,logs.count()); assertEquals(1,checks.count());
+        mvc.perform(get("/api/v1/parking/status")).andExpect(jsonPath("$.numOfCarsParked").value(11));
+    }
+    @Test void unconfiguredPiReturnsUnavailableWithoutInventingData() throws Exception {
+        mvc.perform(post("/api/v1/parking/refresh")).andExpect(status().isServiceUnavailable())
+            .andExpect(header().string("Retry-After","10"));
+        assertEquals(0,logs.count()); assertEquals(0,checks.count());
+    }
+
 }

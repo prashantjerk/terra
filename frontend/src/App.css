@@ -138,3 +138,6 @@ body {
   color: #888;
   margin-top: 10px;
 }
+
+.container > button { padding: 12px 20px; border: 0; border-radius: 8px; background: #245b37; color: white; font: inherit; cursor: pointer; }
+.container > button:disabled { opacity: .6; cursor: wait; }

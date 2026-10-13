@@ -1,5 +1,7 @@
 # Terra — parking availability
 
+**Current workflow:** [On-demand setup and testing](ON_DEMAND.md). Refresh is user-triggered; the older manual-publishing examples below remain available.
+
 Terra is a group parking-detector project. The Raspberry Pi processes an
 image with Python/OpenCV, sends a parked-car count to a Java backend on a
 laptop, and the React frontend displays availability.
@@ -19,7 +21,7 @@ The Pi posts JSON to `POST /api/v1/parking/update`:
 {"timeStamp":"2026-09-30T01:00:00+00:00","numOfCarsParked":8}
 ```
 
-The frontend reads `GET /api/v1/parking/status` every three seconds:
+The frontend reads `GET /api/v1/parking/status` once on page load; clicking Refresh uses `POST /api/v1/parking/refresh`:
 
 ```json
 {"timeStamp":"2026-09-29T21:00:00","numOfCarsParked":8}
@@ -118,7 +120,7 @@ curl http://YOUR_LAPTOP_IP:8080/api/v1/parking/status
 The script runs once, posts the actual detection count, and exits. Check
 its numbered annotated image in `computer-vision/captures/photo-results/`.
 The frontend displays the saved source photo, not the Pi's annotated output.
-Allow up to three seconds for its next poll. Failed posts report an error;
+Click Refresh to request the latest check (configure the Pi service first). Failed posts report an error;
 fix connectivity and rerun. A successful post creates a `parking_logs` row.
 
 ## Detection limits and further setup
