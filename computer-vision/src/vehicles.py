@@ -1,4 +1,4 @@
-"""Pretrained car/bus detection on saved photos, without an empty reference."""
+"""Saved-photo vehicle detection using SSD or YOLO, with an optional lot ROI."""
 import argparse
 import json
 from pathlib import Path
@@ -76,7 +76,8 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--input", type=Path, default=ROOT.parent / "parkinglot")
     parser.add_argument("--output-dir", type=Path, default=ROOT / "captures/photo-results")
-    parser.add_argument("--confidence", type=float, default=.5)
+    from vehicle_pipeline import add_detection_arguments, create_pipeline
+    add_detection_arguments(parser)
     parser.add_argument("--backend-url", help="Demo: full URL to /api/v1/parking/update; requires one image")
     args = parser.parse_args()
     paths = ([args.input] if args.input.is_file() else
@@ -86,7 +87,7 @@ def main():
     if args.backend_url and not args.input.is_file():
         parser.error("--backend-url requires a single image file, not a directory")
     cv2.setNumThreads(2)
-    detector = VehicleDetector(args.confidence)
+    detector = create_pipeline(args)
     args.output_dir.mkdir(parents=True, exist_ok=True)
     results = []
     for path in paths:
@@ -95,7 +96,9 @@ def main():
             raise ValueError(f"Cannot read {path}")
         start = time.monotonic()
         detections, annotated = detector.analyze(frame)
-        result = {"image": path.name, "detected_vehicles": len(detections),
+        result = {"image": path.name, "detector": args.detector,
+                  "roi_config": str(args.roi_config) if args.roi_config else None,
+                  "detected_vehicles": len(detections),
                   "inference_seconds": round(time.monotonic() - start, 3), "detections": detections}
         results.append(result)
         if not cv2.imwrite(str(args.output_dir / f"{path.stem}-annotated.jpg"), annotated):

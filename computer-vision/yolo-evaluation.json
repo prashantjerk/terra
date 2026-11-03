@@ -1,0 +1,26 @@
+{
+  "model": "YOLOv8n COCO ONNX",
+  "model_sha256": "5c6353633f932b9cda994d54d0dd1a5dbfaafd1c97a670218958bc7758fc0cec",
+  "source_image": "WIN_20260929_14_58_01_Pro.jpg",
+  "source_image_sha256": "bbe9145fb2b02da1c5a68a5d953add79b7d3c67b159fa484c24e51ec15ed2284",
+  "opencv": "4.14.0",
+  "input_size": 640,
+  "confidence": 0.5,
+  "iou": 0.45,
+  "classes": [
+    2,
+    5,
+    7
+  ],
+  "roi": "roi.demo-14_58_01.json",
+  "detected_vehicles": 5,
+  "development_machine_inference_seconds": 0.196,
+  "authenticated_http_contract_verified": true,
+  "limitations": "Visual inspection found missed vehicles. Not a ground-truth benchmark or Pi performance measurement.",
+  "additional_runtime_check": {
+    "opencv": "4.11.0",
+    "numpy": "1.26.4",
+    "demo_count": 5,
+    "tests_passed": 28
+  }
+}

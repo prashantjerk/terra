@@ -1,5 +1,7 @@
 # Terra computer vision (Raspberry Pi 4)
 
+For optional YOLOv8 ONNX detection and a configurable lot boundary, see [YOLO + ROI](YOLO_ROI.md). Both photo and on-demand commands support the same options.
+
 **Current workflow:** [On-demand setup and testing](../ON_DEMAND.md). Refresh is user-triggered; the older manual-publishing examples below remain available.
 
 For the current two-field API, capacity-11 demo, and device startup order,

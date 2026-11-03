@@ -33,6 +33,8 @@ def handler_for(detect, token):
                     raise ValueError('Invalid detector result')
                 self.reply(200, {'timeStamp': datetime.now(timezone.utc).isoformat(), 'numOfCarsParked': count})
             except Exception:
+                import logging
+                logging.exception('Detection failed')
                 self.reply(503, {'error': 'Detection failed'})
             finally:
                 lock.release()
@@ -42,7 +44,7 @@ def handler_for(detect, token):
 def main():
     import cv2
     from camera import Camera
-    from vehicles import VehicleDetector
+    from vehicle_pipeline import add_detection_arguments, create_pipeline
     from main import read_image, save_image, ROOT
     parser = argparse.ArgumentParser(description=__doc__)
     source = parser.add_mutually_exclusive_group(required=True)
@@ -50,6 +52,7 @@ def main():
     source.add_argument('--camera', help='pi, usb, or numeric USB index')
     parser.add_argument('--host', default='0.0.0.0')
     parser.add_argument('--port', type=int, default=8090)
+    add_detection_arguments(parser)
     args = parser.parse_args()
     token = os.environ.get('TERRA_PI_TOKEN', '')
     if len(token) < 24:
@@ -60,7 +63,7 @@ def main():
     if args.camera and camera_source != 'pi' and not camera_source.isdigit():
         parser.error('Invalid camera source')
     cv2.setNumThreads(2)
-    detector = VehicleDetector()
+    detector = create_pipeline(args)
     def detect():
         if args.input:
             frame = read_image(args.input)

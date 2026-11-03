@@ -1,0 +1,4 @@
+# Optional Pi YOLO runtime; install into .venv-yolo, not the OS Python.
+# Python 3.9-3.12, 64-bit OS. Distro Picamera2 remains available via system-site-packages.
+numpy>=1.24,<2
+opencv-python-headless==4.11.0.86
