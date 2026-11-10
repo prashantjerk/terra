@@ -75,7 +75,9 @@ per-space map, and it must not be reused for a different camera angle.
 
 Coordinates are normalized: x = pixel_x / (image_width - 1),
 y = pixel_y / (image_height - 1). Top left is [0,0]; bottom right is [1,1].
-Order points around the boundary. Simple convex and concave polygons work;
+Order points around the boundary. For separated parking rows, use `polygons`
+with one point list per row. Optional `reference_size: [width,height]` rejects
+frames with a different aspect ratio. See `POSITION_20261110.md` for the format. Simple convex and concave polygons work;
 self-crossing polygons, duplicate vertices, and zero-area shapes are rejected.
 Do not repeat the first vertex at the end.
 

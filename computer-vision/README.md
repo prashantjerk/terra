@@ -1,5 +1,7 @@
 # Terra computer vision (Raspberry Pi 4)
 
+For the supplied November 10 camera view, see [the proposed parking-row boundaries](POSITION_20261110.md).
+
 **Live camera:** [Camera setup, boundary calibration, and startup guide](../LIVE_CAMERA.md).
 
 For optional YOLOv8 ONNX detection and a configurable lot boundary, see [YOLO + ROI](YOLO_ROI.md). Both photo and on-demand commands support the same options.

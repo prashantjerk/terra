@@ -46,32 +46,55 @@ def validate_polygon(points):
 class LotROI:
     def __init__(self, points):
         self.points = validate_polygon(points)
+        self.areas = [self.points]
+        self.reference_size = None
 
     @classmethod
     def load(cls, path):
         config = json.loads(Path(path).read_text())
-        if not isinstance(config, dict) or set(config) != {'polygon'}:
-            raise ValueError('ROI config must contain only a polygon field')
-        return cls(config['polygon'])
+        if not isinstance(config, dict) or not set(config) <= {'polygon','polygons','reference_size'}:
+            raise ValueError('ROI config needs polygon or polygons, with optional reference_size')
+        if ('polygon' in config) == ('polygons' in config):
+            raise ValueError('Specify exactly one of polygon or polygons')
+        areas = config.get('polygons') if 'polygons' in config else [config['polygon']]
+        if not isinstance(areas,list) or not 1 <= len(areas) <= 32:
+            raise ValueError('ROI needs between one and 32 polygons')
+        roi = cls(areas[0])
+        roi.areas = [validate_polygon(points) for points in areas]
+        reference = config.get('reference_size')
+        if reference is not None:
+            if not isinstance(reference,list) or len(reference)!=2 or any(type(v) is not int or v<2 for v in reference):
+                raise ValueError('reference_size must be [width,height] with integer dimensions')
+            roi.reference_size = reference
+        return roi
 
-    def polygon(self, shape):
+    def polygons(self, shape):
         height, width = shape[:2]
         if height < 2 or width < 2:
             raise ValueError('Image is too small for a lot ROI')
-        return self.points * np.asarray([width-1, height-1], dtype=np.float32)
+        if self.reference_size is not None:
+            rw,rh = self.reference_size
+            if abs((width/height)/(rw/rh)-1) > .01:
+                raise ValueError('Camera aspect ratio differs from ROI reference; capture a new preview and recalibrate')
+        scale = np.asarray([width-1,height-1],dtype=np.float32)
+        return [points*scale for points in self.areas]
+
+    def polygon(self, shape):
+        # Retain the old single-polygon accessor for existing callers.
+        return self.polygons(shape)[0]
 
     def contains(self, detection, shape):
         x,y,w,h = detection['box_xywh']
         height,width = shape[:2]
         anchor = (float(min(width-1,max(0,x+w/2))), float(min(height-1,max(0,y+h))))
-        return cv2.pointPolygonTest(self.polygon(shape), anchor, False) >= 0
+        return any(cv2.pointPolygonTest(polygon,anchor,False)>=0 for polygon in self.polygons(shape))
 
 
 def annotate(frame, detections, roi=None):
     """Return counted boxes and an audit image; excluded boxes stay visible in gray."""
     image = frame.copy()
     if roi is not None:
-        cv2.polylines(image, [np.rint(roi.polygon(frame.shape)).astype(np.int32)], True, (255,180,0), 2)
+        cv2.polylines(image, [np.rint(p).astype(np.int32) for p in roi.polygons(frame.shape)], True, (255,180,0), 2)
     counted = []
     for detection in detections:
         inside = roi is None or roi.contains(detection, frame.shape)

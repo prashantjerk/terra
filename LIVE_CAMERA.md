@@ -76,7 +76,8 @@ scp karkip685@karkip-pi.local:~/terra/computer-vision/captures/live-frame.jpg ./
 ```
 
 Open `computer-vision/roi-editor.html` in your laptop browser. Choose that fresh
-photo, click around the lot boundary in order, and save `roi.live.json`. It works
+photo, click around each parking row in order, use Finish area / add next
+for separate rows, and save `roi.live.json`. It works
 locally with no upload. Mark the actual parking area and exclude nearby roads.
 Copy the downloaded file to the Pi, adjusting the Downloads path if needed:
 
