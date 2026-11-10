@@ -1,6 +1,8 @@
 # Terra computer vision (Raspberry Pi 4)
 
-For the supplied November 10 camera view, see [the proposed parking-row boundaries](POSITION_20261110.md).
+For the user-confirmed **12-space** layout, use [this coordinate preset](SPACES_12_20261110.md).
+
+For the earlier draft November 10 camera view, see [the proposed parking-row boundaries](POSITION_20261110.md).
 
 **Live camera:** [Camera setup, boundary calibration, and startup guide](../LIVE_CAMERA.md).
 

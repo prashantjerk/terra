@@ -176,8 +176,8 @@ The result must say `TcpTestSucceeded : True`. This does not verify the token;
 ## 6. Set visible capacity and start the frontend
 
 Create `frontend/.env.local` from `.env.local.example`, and replace
-`REACT_APP_TOTAL_CAPACITY=11` with the actual number of spaces covered by your
-camera ROI. Eleven is only the old demo default. If the camera sees only one
+`REACT_APP_TOTAL_CAPACITY=12` with the actual number of spaces covered by your
+camera ROI. Twelve is the current user-confirmed layout; update this value if your coverage changes. If the camera sees only one
 row, use that row's capacity. Restart npm start after editing the value;
 production frontend builds need rebuilding for environment changes.
 

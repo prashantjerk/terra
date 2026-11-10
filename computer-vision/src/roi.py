@@ -48,12 +48,14 @@ class LotROI:
         self.points = validate_polygon(points)
         self.areas = [self.points]
         self.reference_size = None
+        self.anchor_mode = "bottom_center"
+        self.capacity = None
 
     @classmethod
     def load(cls, path):
         config = json.loads(Path(path).read_text())
-        if not isinstance(config, dict) or not set(config) <= {'polygon','polygons','reference_size'}:
-            raise ValueError('ROI config needs polygon or polygons, with optional reference_size')
+        if not isinstance(config, dict) or not set(config) <= {'polygon','polygons','reference_size','anchor','capacity'}:
+            raise ValueError('Unknown ROI configuration field')
         if ('polygon' in config) == ('polygons' in config):
             raise ValueError('Specify exactly one of polygon or polygons')
         areas = config.get('polygons') if 'polygons' in config else [config['polygon']]
@@ -61,6 +63,12 @@ class LotROI:
             raise ValueError('ROI needs between one and 32 polygons')
         roi = cls(areas[0])
         roi.areas = [validate_polygon(points) for points in areas]
+        roi.anchor_mode = config.get('anchor','bottom_center')
+        if roi.anchor_mode not in ('bottom_center','center'):
+            raise ValueError('ROI anchor must be bottom_center or center')
+        roi.capacity = config.get('capacity')
+        if roi.capacity is not None and (type(roi.capacity) is not int or roi.capacity < 1):
+            raise ValueError('ROI capacity must be a positive integer')
         reference = config.get('reference_size')
         if reference is not None:
             if not isinstance(reference,list) or len(reference)!=2 or any(type(v) is not int or v<2 for v in reference):
@@ -83,10 +91,14 @@ class LotROI:
         # Retain the old single-polygon accessor for existing callers.
         return self.polygons(shape)[0]
 
-    def contains(self, detection, shape):
+    def anchor(self, detection, shape):
         x,y,w,h = detection['box_xywh']
         height,width = shape[:2]
-        anchor = (float(min(width-1,max(0,x+w/2))), float(min(height-1,max(0,y+h))))
+        anchor_y = y+h/2 if self.anchor_mode == 'center' else y+h
+        return (float(min(width-1,max(0,x+w/2))), float(min(height-1,max(0,anchor_y))))
+
+    def contains(self, detection, shape):
+        anchor = self.anchor(detection,shape)
         return any(cv2.pointPolygonTest(polygon,anchor,False)>=0 for polygon in self.polygons(shape))
 
 
@@ -106,6 +118,7 @@ def annotate(frame, detections, roi=None):
         color = (0,220,0) if inside else (140,140,140)
         label = f"#{item['number']} {item['class']} {item['confidence']:.2f}" if inside else 'outside ROI'
         cv2.rectangle(image,(x,y),(x+w,y+h),color,2)
-        cv2.circle(image,(min(frame.shape[1]-1,round(x+w/2)),min(frame.shape[0]-1,y+h)),3,color,-1)
+        anchor = roi.anchor(item,frame.shape) if roi is not None else (min(frame.shape[1]-1,x+w/2),min(frame.shape[0]-1,y+h))
+        cv2.circle(image,tuple(round(v) for v in anchor),3,color,-1)
         cv2.putText(image,label,(x,max(16,y-5)),cv2.FONT_HERSHEY_SIMPLEX,.5,color,1)
     return counted,image

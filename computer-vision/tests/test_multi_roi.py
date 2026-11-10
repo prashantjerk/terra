@@ -41,4 +41,32 @@ class MultiROITests(unittest.TestCase):
         for point in [(390,400),(1200,500),(710,150),(500,1010),(500,950),(485,43)]:
             self.assertFalse(inside(*point),point)
 
+class TwelveSpaceTests(unittest.TestCase):
+    def test_user_confirmed_preset_has_twelve_valid_spaces(self):
+        roi=LotROI.load(Path(__file__).resolve().parents[1]/'roi.spaces-12-20261110.json')
+        self.assertEqual(len(roi.areas),12)
+        self.assertEqual(roi.capacity,12)
+        self.assertEqual(roi.anchor_mode,'center')
+        for x,y in [(480,870),(545,660),(575,470),(620,355),(685,269),(710,190),
+                    (747,73),(797,23),(90,350),(225,215),(355,90),(500,25)]:
+            self.assertTrue(roi.contains({'box_xywh':[x-10,y-10,20,20]},(1080,1920,3)),(x,y))
+        for x,y in [(390,400),(1200,500),(500,1070),(450,180)]:
+            self.assertFalse(roi.contains({'box_xywh':[x-10,y-10,20,20]},(1080,1920,3)),(x,y))
+
+    def test_center_anchor_keeps_a_vehicle_whose_bottom_is_outside_body_outline(self):
+        points=[[.2,.2],[.8,.2],[.8,.6],[.2,.6]]
+        with tempfile.TemporaryDirectory() as folder:
+            path=Path(folder)/'roi.json';path.write_text(json.dumps({'polygon':points,'anchor':'center'}))
+            centered=LotROI.load(path)
+        detection={'box_xywh':[40,30,20,50]}
+        self.assertTrue(centered.contains(detection,(101,101,3)))
+        self.assertFalse(LotROI(points).contains(detection,(101,101,3)))
+
+    def test_unknown_anchor_or_invalid_capacity_is_rejected(self):
+        with tempfile.TemporaryDirectory() as folder:
+            path=Path(folder)/'roi.json'
+            for option in ({'anchor':'unknown'},{'capacity':0},{'capacity':True}):
+                path.write_text(json.dumps({'polygon':[[0,0],[1,0],[1,1]],**option}))
+                with self.assertRaises(ValueError):LotROI.load(path)
+
 if __name__=='__main__':unittest.main()

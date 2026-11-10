@@ -8,8 +8,8 @@ test('shows count and capacity minus count', async () => {
   fetch.mockResolvedValue({ ok: true, json: async () => ({ timeStamp: '2026-09-29T20:00:00', numOfCarsParked: 7 }) });
   render(<App />);
   await waitFor(() => expect(screen.getByText('7')).toBeInTheDocument());
-  expect(screen.getByText('11')).toBeInTheDocument();
-  expect(screen.getByText('4')).toBeInTheDocument();
+  expect(screen.getByText('12')).toBeInTheDocument();
+  expect(screen.getByText('5')).toBeInTheDocument();
 });
 test('does not fabricate vacancies or a timestamp before the first update', async () => {
   fetch.mockResolvedValue({ ok: true, json: async () => ({ timeStamp: null, numOfCarsParked: null }) });

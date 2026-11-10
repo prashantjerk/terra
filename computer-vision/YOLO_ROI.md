@@ -81,8 +81,9 @@ frames with a different aspect ratio. See `POSITION_20261110.md` for the format.
 self-crossing polygons, duplicate vertices, and zero-area shapes are rejected.
 Do not repeat the first vertex at the end.
 
-A vehicle is counted when its bounding box's bottom-center falls inside or
-on the ROI boundary. A box merely overlapping the lot is not enough. This is
+By default, a vehicle is counted when its bounding box's bottom-center falls inside or
+on the ROI boundary. Configs with `anchor: "center"` use the box center instead,
+as in the user-drawn 12-space preset. A box merely overlapping the lot is not enough. This is
 a geometric approximation, not proof a vehicle is parked. Moving vehicles
 inside the boundary are also counted. Occluded cars and tilted camera views
 can make the anchor inaccurate. This is one lot ROI, not a per-space map.

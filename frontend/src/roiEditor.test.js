@@ -40,7 +40,8 @@ test('camera boundary editor scales clicks, undoes corners and exports normalize
     reader.readAsText(exported);
     // FileReader in jsdom schedules a browser task.
     jest.useRealTimers();
-    expect(await result).toEqual({reference_size:[1280,720],polygon:[[.1,.1],[.9,.1],[.9,.9]]});
+    expect(await result).toEqual({reference_size:[1280,720],anchor:'bottom_center',polygon:[[.1,.1],[.9,.1],[.9,.9]]});
+    document.getElementById('anchor').value='center';
     document.getElementById('finish').click();
     expect(document.getElementById('save').disabled).toBe(false);
     add(138,92); add(266,92);
@@ -51,7 +52,9 @@ test('camera boundary editor scales clicks, undoes corners and exports normalize
     const secondReader = new FileReader();
     const second = new Promise(resolve => { secondReader.onload=()=>resolve(JSON.parse(secondReader.result)); });
     secondReader.readAsText(exported);
-    expect((await second).polygons).toHaveLength(2);
+    const secondConfig=await second;
+    expect(secondConfig.polygons).toHaveLength(2);
+    expect(secondConfig.anchor).toBe('center');
     document.getElementById('clear').click();
     expect(document.getElementById('save').disabled).toBe(true);
     await new Promise(resolve => setTimeout(resolve, 1100));

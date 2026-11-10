@@ -1,15 +1,16 @@
 import React, { useState, useEffect, useRef } from "react";
 import "./App.css";
 
-// Configure the capacity of exactly the parking area visible inside the camera ROI.
-const TOTAL_CAPACITY = Number(process.env.REACT_APP_TOTAL_CAPACITY || 11);
-if (!Number.isInteger(TOTAL_CAPACITY) || TOTAL_CAPACITY < 1) {
-  throw new Error("REACT_APP_TOTAL_CAPACITY must be a positive integer");
-}
+// Local override takes priority; live view is 12 spaces, original saved demo is 11.
+const CAPACITY_OVERRIDE = process.env.REACT_APP_TOTAL_CAPACITY;
 const API_BASE = process.env.REACT_APP_API_BASE_URL || "http://localhost:8080";
 
 function App() {
   const DEMO_MODE = new URLSearchParams(window.location.search).get("demo") === "14_58_01";
+  const TOTAL_CAPACITY = Number(CAPACITY_OVERRIDE || (DEMO_MODE ? 11 : 12));
+  if (!Number.isInteger(TOTAL_CAPACITY) || TOTAL_CAPACITY < 1) {
+    throw new Error("REACT_APP_TOTAL_CAPACITY must be a positive integer");
+  }
   const [occupiedCount, setOccupiedCount] = useState(null);
   const [lastUpdated, setLastUpdated] = useState(null);
   const [observationStamp, setObservationStamp] = useState(null);
