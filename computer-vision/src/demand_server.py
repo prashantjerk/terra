@@ -41,7 +41,7 @@ def handler_for(detect, token):
     return Handler
 
 
-def main():
+def main(argv=None):
     import cv2
     from camera import Camera
     from vehicle_pipeline import add_detection_arguments, create_pipeline
@@ -52,9 +52,13 @@ def main():
     source.add_argument('--camera', help='pi, usb, or numeric USB index')
     parser.add_argument('--host', default='0.0.0.0')
     parser.add_argument('--port', type=int, default=8090)
+    parser.add_argument('--width', type=int, default=1280)
+    parser.add_argument('--height', type=int, default=720)
     add_detection_arguments(parser)
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
     token = os.environ.get('TERRA_PI_TOKEN', '')
+    if token != token.strip() or any(c.isspace() for c in token):
+        parser.error('TERRA_PI_TOKEN contains whitespace; set it on one line')
     if len(token) < 24:
         parser.error('Set TERRA_PI_TOKEN to a shared random secret of at least 24 characters')
     if args.input and not args.input.is_file():
@@ -64,24 +68,31 @@ def main():
         parser.error('Invalid camera source')
     cv2.setNumThreads(2)
     detector = create_pipeline(args)
+    camera = None
     def detect():
         if args.input:
             frame = read_image(args.input)
         else:
-            with Camera(camera_source) as camera:
-                frame = camera.read()
+            frame = camera.read()
         detections, annotated = detector.analyze(frame)
         save_image(ROOT / 'captures/demand-annotated.jpg', annotated)
         return len(detections)
-    server = ThreadingHTTPServer((args.host, args.port), handler_for(detect, token))
-    server.daemon_threads = True
-    print(f'Pi detector listening on port {args.port}; waiting for requests', flush=True)
+    server = None
     try:
+        if args.camera:
+            camera = Camera(camera_source, args.width, args.height)
+            save_image(ROOT / 'captures/live-frame.jpg', camera.read())
+        server = ThreadingHTTPServer((args.host, args.port), handler_for(detect, token))
+        server.daemon_threads = True
+        print(f'Pi detector listening on port {args.port}; waiting for requests', flush=True)
         server.serve_forever()
     except KeyboardInterrupt:
         pass
     finally:
-        server.server_close()
+        if server is not None:
+            server.server_close()
+        if camera is not None:
+            camera.close()
 
 if __name__ == '__main__':
     main()

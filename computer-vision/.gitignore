@@ -8,3 +8,6 @@ models/
 roi.json
 *.pt
 *.onnx
+.env.pi
+roi.live.json
+.venv-yolo/

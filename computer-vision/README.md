@@ -1,5 +1,7 @@
 # Terra computer vision (Raspberry Pi 4)
 
+**Live camera:** [Camera setup, boundary calibration, and startup guide](../LIVE_CAMERA.md).
+
 For optional YOLOv8 ONNX detection and a configurable lot boundary, see [YOLO + ROI](YOLO_ROI.md). Both photo and on-demand commands support the same options.
 
 **Current workflow:** [On-demand setup and testing](../ON_DEMAND.md). Refresh is user-triggered; the older manual-publishing examples below remain available.

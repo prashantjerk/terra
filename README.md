@@ -1,5 +1,7 @@
 # Terra — parking availability
 
+**Live camera:** [Camera setup, boundary calibration, and startup guide](LIVE_CAMERA.md).
+
 **Current workflow:** [On-demand setup and testing](ON_DEMAND.md). Refresh is user-triggered; the older manual-publishing examples below remain available.
 
 Terra is a group parking-detector project. The Raspberry Pi processes an

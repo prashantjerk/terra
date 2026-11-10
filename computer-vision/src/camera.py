@@ -5,6 +5,8 @@ import cv2
 
 class Camera:
     def __init__(self, source="pi", width=640, height=480):
+        if type(width) is not int or type(height) is not int or not (320 <= width <= 4096 and 240 <= height <= 3072):
+            raise ValueError("Camera dimensions must be integers: width 320-4096, height 240-3072")
         self.pi = None
         self.usb = None
         try:
@@ -16,10 +18,11 @@ class Camera:
                 self.pi = Picamera2()
                 # Picamera2 RGB888 arrays have BGR byte order, matching OpenCV.
                 self.pi.configure(self.pi.create_video_configuration(
-                    main={"size": (width, height), "format": "RGB888"}))
+                    main={"size": (width, height), "format": "RGB888"}, queue=False))
                 self.pi.start()
             else:
                 self.usb = cv2.VideoCapture(int(source))
+                self.usb.set(cv2.CAP_PROP_BUFFERSIZE, 1)
                 self.usb.set(cv2.CAP_PROP_FRAME_WIDTH, width)
                 self.usb.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
                 if not self.usb.isOpened():
@@ -33,6 +36,9 @@ class Camera:
         if self.pi is not None:
             frame = self.pi.capture_array("main")
         else:
+            # Drain a short USB queue left between user requests.
+            for _ in range(4):
+                self.usb.grab()
             ok, frame = self.usb.read()
             if not ok:
                 raise RuntimeError("Camera frame capture failed")

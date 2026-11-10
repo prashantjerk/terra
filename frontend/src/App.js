@@ -1,7 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
 import "./App.css";
 
-const TOTAL_CAPACITY = 11; // Hardcoded capacity for the selected-photo demo
+// Configure the capacity of exactly the parking area visible inside the camera ROI.
+const TOTAL_CAPACITY = Number(process.env.REACT_APP_TOTAL_CAPACITY || 11);
+if (!Number.isInteger(TOTAL_CAPACITY) || TOTAL_CAPACITY < 1) {
+  throw new Error("REACT_APP_TOTAL_CAPACITY must be a positive integer");
+}
 const API_BASE = process.env.REACT_APP_API_BASE_URL || "http://localhost:8080";
 
 function App() {
