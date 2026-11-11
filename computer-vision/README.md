@@ -235,3 +235,5 @@ a local HTTP server; camera hardware must still be verified on the Pi.
 
 References: [Raspberry Pi camera documentation](https://www.raspberrypi.com/documentation/computers/camera_software.html),
 [Picamera2 manual](https://datasheets.raspberrypi.com/camera/picamera2-manual.pdf).
+
+For the fixed 12-space layout and saved photos on Windows, see [Parking photos](PARKING_PHOTOS.md).
