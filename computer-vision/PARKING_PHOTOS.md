@@ -26,3 +26,9 @@ Use the same camera position, angle, and crop as the original 1920×1080
 reference. A resized copy with the same aspect ratio is fine. The program
 rejects a different aspect ratio but cannot detect a moved camera. Use the
 original photo without drawn markings.
+
+For distant vehicles near the top edge, add `--zoom-upper-row`. This runs a
+second YOLO pass on a crop of the same fixed camera view. Detections are mapped
+back to the original image; each space still counts at most once. The option
+uses the same model and confidence setting. Compare against a photo where P08
+is empty before relying on the option for availability reporting.
