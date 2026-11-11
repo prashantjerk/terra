@@ -78,12 +78,16 @@ def main():
     parser.add_argument('--model', type=Path, default=ROOT / 'models/yolov8n.onnx')
     parser.add_argument('--output-dir', type=Path, default=ROOT / 'captures/parking-photos')
     parser.add_argument('--confidence', type=float, default=.5)
+    parser.add_argument('--roi-config', type=Path, default=ROOT / 'roi.spaces-12-20261110.json',
+                        help='Parking map for the input camera framing')
     parser.add_argument('--zoom-upper-row', action='store_true',
                         help='Also scan a crop around the distant upper parking row')
     args = parser.parse_args()
     if not args.model.is_file():
         parser.error(f'YOLO model missing: {args.model}. See YOLO_ROI.md for export instructions.')
-    roi = LotROI.load(ROOT / 'roi.spaces-12-20261110.json')
+    roi = LotROI.load(args.roi_config)
+    if args.zoom_upper_row and args.roi_config.resolve() != (ROOT / 'roi.spaces-12-20261110.json').resolve():
+        parser.error('--zoom-upper-row is calibrated only for the original 12-space map')
     detector = YoloDetector(args.model, args.confidence)
     failed = False
     for index, photo in enumerate(args.photos, 1):

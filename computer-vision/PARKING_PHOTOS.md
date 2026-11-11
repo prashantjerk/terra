@@ -32,3 +32,16 @@ second YOLO pass on a crop of the same fixed camera view. Detections are mapped
 back to the original image; each space still counts at most once. The option
 uses the same model and confidence setting. Compare against a photo where P08
 is empty before relying on the option for availability reporting.
+
+For photos framed like the cropped 1720×968 sample, select the separate
+nine-space map:
+
+```bash
+.venv-photos/bin/python src/parking_photos.py --roi-config roi.cropped-9.json \
+  --output-dir captures/cropped-parking-photos /path/to/photo.jpg
+```
+
+This calibration excludes the clipped white SUV space at the upper left.
+Review the partly visible P07 outline beside the upper end of the right-hand
+row before using the map for differently cropped images. The reference
+sample reports seven occupied spaces and two available (P02 and P07).
