@@ -1,5 +1,8 @@
 package edu.lynchburg.terra.service;
 import edu.lynchburg.terra.dto.ParkingStatusUpdateRequest;
+import edu.lynchburg.terra.dto.ParkingPhotoResult;
+import java.util.Map;
+import org.springframework.http.MediaType;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
@@ -17,6 +20,22 @@ public class PiClient {
         factory.setReadTimeout(Duration.ofSeconds(timeout));
         client=RestClient.builder().requestFactory(factory).build();
     }
+    public String[] listPhotos(String photoUrl) {
+        return client.get().uri(photoUrl).header("Authorization", authorization())
+            .retrieve().body(String[].class);
+    }
+
+    public ParkingPhotoResult checkPhoto(String photoUrl, String name) {
+        return client.post().uri(photoUrl).header("Authorization", authorization())
+            .contentType(MediaType.APPLICATION_JSON).body(Map.of("photo", name))
+            .retrieve().body(ParkingPhotoResult.class);
+    }
+
+    private String authorization() {
+        if (token.isBlank()) throw new IllegalStateException("Pi token not configured");
+        return "Bearer " + token;
+    }
+
     public ParkingStatusUpdateRequest detect() {
         if (url.isBlank() || token.isBlank()) throw new IllegalStateException("Pi URL/token not configured");
         var result=client.post().uri(url).header("Authorization","Bearer "+token)

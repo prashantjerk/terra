@@ -139,3 +139,5 @@ See the component instructions:
 - [Computer vision: photo evaluation and optional live camera](computer-vision/README.md)
 - [Backend: endpoints, database, and tests](terra-backend/README.md)
 - [Frontend: demo mode, API configuration, and tests](frontend/README.md)
+
+See [Saved photos in the dashboard](SAVED_PHOTO_DASHBOARD.md) for the Pi service and PostgreSQL setup.

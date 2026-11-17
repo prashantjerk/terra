@@ -29,7 +29,7 @@ public class RequestLimitFilter extends OncePerRequestFilter {
     @Override protected void doFilterInternal(HttpServletRequest req,HttpServletResponse res,FilterChain chain) throws ServletException,IOException {
         String path=req.getRequestURI();
         if((req.getMethod().equals("GET") && path.equals("/api/v1/parking/status")) ||
-           (req.getMethod().equals("POST") && path.equals("/api/v1/parking/refresh"))) {
+           (req.getMethod().equals("POST") && (path.equals("/api/v1/parking/refresh") || path.equals("/api/v1/parking/photos/check")))) {
             long wait=retry(req.getRemoteAddr()); // Never trust client-supplied forwarded headers.
             if(wait>0) {
                 res.setStatus(429); res.setHeader("Retry-After",Long.toString(wait));

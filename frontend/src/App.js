@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
 import "./App.css";
+import SavedPhotos from "./SavedPhotos";
 
 // Local override takes priority; live view is 12 spaces, original saved demo is 11.
 const CAPACITY_OVERRIDE = process.env.REACT_APP_TOTAL_CAPACITY;
 const API_BASE = process.env.REACT_APP_API_BASE_URL || "http://localhost:8080";
 
-function App() {
+function LiveParking() {
   const DEMO_MODE = new URLSearchParams(window.location.search).get("demo") === "14_58_01";
   const TOTAL_CAPACITY = Number(CAPACITY_OVERRIDE || (DEMO_MODE ? 11 : 12));
   if (!Number.isInteger(TOTAL_CAPACITY) || TOTAL_CAPACITY < 1) {
@@ -155,6 +156,17 @@ function App() {
       )}
     </div>
   );
+}
+
+function App() {
+  const [saved, setSaved] = useState(new URLSearchParams(window.location.search).get("mode") === "photos");
+  return <>
+    <nav className="parking-mode" aria-label="Parking view">
+      <button aria-pressed={!saved} onClick={() => setSaved(false)}>Live parking</button>
+      <button aria-pressed={saved} onClick={() => setSaved(true)}>Saved photos</button>
+    </nav>
+    {saved ? <SavedPhotos apiBase={API_BASE} /> : <LiveParking />}
+  </>;
 }
 
 export default App;

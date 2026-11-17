@@ -141,3 +141,23 @@ body {
 
 .container > button { padding: 12px 20px; border: 0; border-radius: 8px; background: #245b37; color: white; font: inherit; cursor: pointer; }
 .container > button:disabled { opacity: .6; cursor: wait; }
+
+.parking-mode {
+  display: flex;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 1rem;
+}
+
+.parking-mode button[aria-pressed="true"] {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+.photo-spaces {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.5rem;
+  list-style: none;
+  padding: 0;
+}

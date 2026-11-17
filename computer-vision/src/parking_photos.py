@@ -72,6 +72,12 @@ def assess(frame, detections, roi):
     }, preview
 
 
+def analyze_photo(photo, detector, roi, zoom_upper_row=False):
+    frame = read_image(photo)
+    roi.polygons(frame.shape)
+    return assess(frame, detect_vehicles(frame, detector, zoom_upper_row), roi)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('photos', nargs='+', type=Path)
@@ -92,10 +98,7 @@ def main():
     failed = False
     for index, photo in enumerate(args.photos, 1):
         try:
-            frame = read_image(photo)
-            roi.polygons(frame.shape)
-            detections = detect_vehicles(frame, detector, args.zoom_upper_row)
-            result, preview = assess(frame, detections, roi)
+            result, preview = analyze_photo(photo, detector, roi, args.zoom_upper_row)
             output = args.output_dir / f'{index:03d}-{photo.stem}-parking.jpg'
             if any(output.resolve() == source.resolve() for source in args.photos):
                 raise ValueError('Output would overwrite an input photo; use another --output-dir')
