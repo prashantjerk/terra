@@ -18,7 +18,13 @@ public class PiClient {
         this.url=url; this.token=token;
         var factory=new JdkClientHttpRequestFactory(HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5)).build());
         factory.setReadTimeout(Duration.ofSeconds(timeout));
-        client=RestClient.builder().requestFactory(factory).build();
+        // The Python service requires Content-Length; JSON streaming can use chunked transfer.
+        // An interceptor receives the serialized body and gives it an explicit length.
+        client=RestClient.builder().requestFactory(factory)
+            .requestInterceptor((request, body, execution) -> {
+                if (body.length > 0) request.getHeaders().setContentLength(body.length);
+                return execution.execute(request, body);
+            }).build();
     }
     public String[] listPhotos(String photoUrl) {
         return client.get().uri(photoUrl).header("Authorization", authorization())
